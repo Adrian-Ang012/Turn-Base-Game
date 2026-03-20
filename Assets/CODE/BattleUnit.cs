@@ -45,7 +45,9 @@ public class BattleUnit : MonoBehaviour
     public void TakeDamage(int rawDamage, bool isMagic = false)
     {
         int def = isMagic ? magicDefense : defense;
+
         if (isDefending) def = Mathf.RoundToInt(def * 2f);
+
         int finalDamage = Mathf.Max(1, rawDamage - def);
         currentHP = Mathf.Max(0, currentHP - finalDamage);
 
@@ -58,10 +60,9 @@ public class BattleUnit : MonoBehaviour
         RefreshUI();
     }
 
-    public int CalculatePhysicalDamage(bool isCritical = false)
+    public int CalculatePhysicalDamage()
     {
-        float roll = Random.Range(0.85f, 1.15f);
-        int baseDmg = Mathf.RoundToInt(physicalAttack * roll);
+        int baseDmg = physicalAttack;
 
         if (isCharging)
         {
@@ -69,14 +70,12 @@ public class BattleUnit : MonoBehaviour
             isCharging = false;
         }
 
-        if (isCritical) baseDmg = Mathf.RoundToInt(baseDmg * 1.5f);
         return baseDmg;
     }
 
-    public int CalculateMagicDamage(bool isCritical = false)
+    public int CalculateMagicDamage()
     {
-        float roll = Random.Range(0.85f, 1.15f);
-        int baseDmg = Mathf.RoundToInt(magicAttack * roll);
+        int baseDmg = magicAttack;
 
         if (isCharging)
         {
@@ -84,7 +83,6 @@ public class BattleUnit : MonoBehaviour
             isCharging = false;
         }
 
-        if (isCritical) baseDmg = Mathf.RoundToInt(baseDmg * 1.5f);
         return baseDmg;
     }
 

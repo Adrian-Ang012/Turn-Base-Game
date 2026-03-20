@@ -11,14 +11,9 @@ public class BattleHandler : MonoBehaviour
     [Header("Dependencies")]
     public EnemyAI enemyAI;
 
-    [Header("RNG Settings")]
-    [Range(0f, 1f)] public float critChance = 0.10f;
-
     public enum BattlePhase { CommandSelection, Resolution, Victory, Defeat }
     public BattlePhase CurrentPhase { get; private set; }
 
-    private List<PlayerAction> playerQueue = new List<PlayerAction>();
-    private List<PlayerAction> enemyQueue  = new List<PlayerAction>();
     private int currentCommandIndex = 0;
 
     void Start()
@@ -29,8 +24,6 @@ public class BattleHandler : MonoBehaviour
     void StartCommandPhase()
     {
         CurrentPhase = BattlePhase.CommandSelection;
-        playerQueue.Clear();
-        enemyQueue.Clear();
         currentCommandIndex = 0;
 
         foreach (var u in playerUnits) u.ResetTurnFlags();
@@ -49,7 +42,6 @@ public class BattleHandler : MonoBehaviour
 
         if (currentCommandIndex >= playerUnits.Count)
         {
-            GenerateEnemyCommands();
             StartCoroutine(ResolvePhase());
             return;
         }
@@ -60,21 +52,8 @@ public class BattleHandler : MonoBehaviour
 
     public void ReceivePlayerAction(PlayerAction action)
     {
-        playerQueue.Add(action);
         currentCommandIndex++;
         PromptNextPlayerCommand();
-    }
-
-    void GenerateEnemyCommands()
-    {
-        List<BattleUnit> aliveEnemies = enemyUnits.FindAll(e => !e.isDead);
-        List<BattleUnit> alivePlayers = playerUnits.FindAll(p => !p.isDead);
-
-        foreach (var enemy in aliveEnemies)
-        {
-            PlayerAction action = enemyAI.DecideAction(enemy, alivePlayers);
-            if (action != null) enemyQueue.Add(action);
-        }
     }
 
     IEnumerator ResolvePhase()
@@ -84,102 +63,10 @@ public class BattleHandler : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);
 
-        foreach (var action in playerQueue)
-        {
-            if (action.actor.isDead) continue;
-
-            yield return StartCoroutine(ExecuteAction(action));
-            yield return new WaitForSeconds(0.8f);
-
-            if (CheckBattleEnd()) yield break;
-        }
-
-        yield return new WaitForSeconds(0.3f);
-
-        foreach (var action in enemyQueue)
-        {
-            if (action.actor.isDead) continue;
-
-            if (action.target != null && action.target.isDead)
-                action.target = GetRandomAlivePlayer();
-
-            if (action.target == null &&
-                action.actionType != PlayerAction.ActionType.Defend &&
-                action.actionType != PlayerAction.ActionType.Charge)
-            {
-                continue;
-            }
-
-            yield return StartCoroutine(ExecuteAction(action));
-            yield return new WaitForSeconds(0.8f);
-
-            if (CheckBattleEnd()) yield break;
-        }
-
         StartCommandPhase();
     }
 
-    IEnumerator ExecuteAction(PlayerAction action)
-    {
-        BattleUnit actor  = action.actor;
-        BattleUnit target = action.target;
-        bool isCrit = Random.value < critChance;
-
-        switch (action.actionType)
-        {
-            case PlayerAction.ActionType.Attack:
-            {
-                int dmg = actor.CalculatePhysicalDamage(isCrit);
-                target.TakeDamage(dmg, isMagic: false);
-                string critStr = isCrit ? " CRITICAL HIT!" : "";
-                Debug.Log($"{actor.unitName} attacks {target.unitName} for {dmg} damage!{critStr}");
-                if (target.isDead)
-                    Debug.Log($"{target.unitName} has been defeated!");
-                break;
-            }
-
-            case PlayerAction.ActionType.Magic:
-            {
-                int dmg = actor.CalculateMagicDamage(isCrit);
-                target.TakeDamage(dmg, isMagic: true);
-                string critStr = isCrit ? " CRITICAL HIT!" : "";
-                Debug.Log($"{actor.unitName} casts magic on {target.unitName} for {dmg} damage!{critStr}");
-                if (target.isDead)
-                    Debug.Log($"{target.unitName} has been defeated!");
-                break;
-            }
-
-            case PlayerAction.ActionType.Defend:
-                actor.StartDefend();
-                Debug.Log($"{actor.unitName} takes a defensive stance!");
-                break;
-
-            case PlayerAction.ActionType.UsePotion:
-            {
-                int hpBefore = actor.currentHP;
-                bool success = actor.UsePotion();
-                if (success)
-                {
-                    int healed = actor.currentHP - hpBefore;
-                    Debug.Log($"{actor.unitName} used a Potion and recovered {healed} HP! ({actor.potionCount} left)");
-                }
-                else
-                {
-                    Debug.Log($"{actor.unitName} has no Potions left!");
-                }
-                break;
-            }
-
-            case PlayerAction.ActionType.Charge:
-                actor.StartCharge();
-                Debug.Log($"{actor.unitName} is charging up power for next attack!");
-                break;
-        }
-
-        yield return null;
-    }
-
-    bool CheckBattleEnd()
+    public bool CheckBattleEnd()
     {
         bool allPlayersDead = playerUnits.TrueForAll(p => p.isDead);
         bool allEnemiesDead = enemyUnits.TrueForAll(e => e.isDead);
@@ -199,13 +86,6 @@ public class BattleHandler : MonoBehaviour
         }
 
         return false;
-    }
-
-    BattleUnit GetRandomAlivePlayer()
-    {
-        List<BattleUnit> alive = playerUnits.FindAll(p => !p.isDead);
-        if (alive.Count == 0) return null;
-        return alive[Random.Range(0, alive.Count)];
     }
 
     public BattleUnit GetCurrentCommandUnit()
