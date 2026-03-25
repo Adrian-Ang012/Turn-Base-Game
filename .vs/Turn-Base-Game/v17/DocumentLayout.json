@@ -1,0 +1,71 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Anton C. Sanidad\\Documents\\GitHub\\Turn-Base-Game\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{7EB846F8-F96E-9AA4-D987-8706C05C1CA2}|Assembly-CSharp.csproj|c:\\users\\anton c. sanidad\\documents\\github\\turn-base-game\\assets\\code\\battlehandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7EB846F8-F96E-9AA4-D987-8706C05C1CA2}|Assembly-CSharp.csproj|solutionrelative:assets\\code\\battlehandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7EB846F8-F96E-9AA4-D987-8706C05C1CA2}|Assembly-CSharp.csproj|c:\\users\\anton c. sanidad\\documents\\github\\turn-base-game\\assets\\code\\battlequeue.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7EB846F8-F96E-9AA4-D987-8706C05C1CA2}|Assembly-CSharp.csproj|solutionrelative:assets\\code\\battlequeue.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7EB846F8-F96E-9AA4-D987-8706C05C1CA2}|Assembly-CSharp.csproj|c:\\users\\anton c. sanidad\\documents\\github\\turn-base-game\\assets\\code\\battlerng.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7EB846F8-F96E-9AA4-D987-8706C05C1CA2}|Assembly-CSharp.csproj|solutionrelative:assets\\code\\battlerng.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "BattleHandler.cs",
+              "DocumentMoniker": "C:\\Users\\Anton C. Sanidad\\Documents\\GitHub\\Turn-Base-Game\\Assets\\CODE\\BattleHandler.cs",
+              "RelativeDocumentMoniker": "Assets\\CODE\\BattleHandler.cs",
+              "ToolTip": "C:\\Users\\Anton C. Sanidad\\Documents\\GitHub\\Turn-Base-Game\\Assets\\CODE\\BattleHandler.cs",
+              "RelativeToolTip": "Assets\\CODE\\BattleHandler.cs",
+              "ViewState": "AgIAANEAAAAAAAAAAAAiwNIAAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-25T07:41:34.457Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "BattleQueue.cs",
+              "DocumentMoniker": "C:\\Users\\Anton C. Sanidad\\Documents\\GitHub\\Turn-Base-Game\\Assets\\CODE\\BattleQueue.cs",
+              "RelativeDocumentMoniker": "Assets\\CODE\\BattleQueue.cs",
+              "ToolTip": "C:\\Users\\Anton C. Sanidad\\Documents\\GitHub\\Turn-Base-Game\\Assets\\CODE\\BattleQueue.cs",
+              "RelativeToolTip": "Assets\\CODE\\BattleQueue.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-25T07:41:14.696Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "BattleRNG.cs",
+              "DocumentMoniker": "C:\\Users\\Anton C. Sanidad\\Documents\\GitHub\\Turn-Base-Game\\Assets\\CODE\\BattleRNG.cs",
+              "RelativeDocumentMoniker": "Assets\\CODE\\BattleRNG.cs",
+              "ToolTip": "C:\\Users\\Anton C. Sanidad\\Documents\\GitHub\\Turn-Base-Game\\Assets\\CODE\\BattleRNG.cs",
+              "RelativeToolTip": "Assets\\CODE\\BattleRNG.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-25T07:40:41.959Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
