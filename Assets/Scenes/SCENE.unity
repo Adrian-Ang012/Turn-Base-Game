@@ -480,6 +480,7 @@ MonoBehaviour:
   enemyAI: {fileID: 183334423}
   battleQueue: {fileID: 183334427}
   battleRNG: {fileID: 183334426}
+  battleUI: {fileID: 183334428}
 --- !u!4 &183334425
 Transform:
   m_ObjectHideFlags: 0
@@ -545,8 +546,10 @@ MonoBehaviour:
   actionPanel: {fileID: 1467733321}
   attackPanel: {fileID: 1657238096}
   indicator: {fileID: 813926237}
-  battleHandler: {fileID: 0}
-  enemyTargets: []
+  battleHandler: {fileID: 183334424}
+  enemyTargets:
+  - {fileID: 474858955}
+  - {fileID: 266808191}
 --- !u!114 &183334429
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -886,8 +889,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13a40c285fd38d748a4aa3c1e11aba0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleUnit
-  unitName: Unit
-  isPlayerUnit: 1
+  unitName: Dragon
+  isPlayerUnit: 0
   maxHP: 100
   currentHP: 100
   physicalAttack: 20
@@ -925,6 +928,11 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!4 &266808191 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6563569953056170233, guid: 88925decd297d4eaaaeb4ec1b87fbc02, type: 3}
+  m_PrefabInstance: {fileID: 1355414344}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &268891996
 GameObject:
   m_ObjectHideFlags: 0
@@ -1518,8 +1526,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13a40c285fd38d748a4aa3c1e11aba0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleUnit
-  unitName: Unit
-  isPlayerUnit: 1
+  unitName: Robot
+  isPlayerUnit: 0
   maxHP: 100
   currentHP: 100
   physicalAttack: 20
@@ -1535,6 +1543,11 @@ MonoBehaviour:
   unitNameText: {fileID: 0}
   isDefending: 0
   isDead: 0
+--- !u!4 &474858955 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3482137509461170663, guid: b6994c282768a874181b376b4e48d89c, type: 3}
+  m_PrefabInstance: {fileID: 1966038238}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &488271381
 GameObject:
   m_ObjectHideFlags: 0
@@ -2690,7 +2703,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!212 &813926238
 SpriteRenderer:
   serializedVersion: 2
@@ -4761,7 +4774,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13a40c285fd38d748a4aa3c1e11aba0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleUnit
-  unitName: Unit
+  unitName: Mage
   isPlayerUnit: 1
   maxHP: 100
   currentHP: 100
@@ -5147,7 +5160,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13a40c285fd38d748a4aa3c1e11aba0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleUnit
-  unitName: Unit
+  unitName: Knight
   isPlayerUnit: 1
   maxHP: 100
   currentHP: 100
@@ -5544,7 +5557,7 @@ GameObject:
   - component: {fileID: 1657238099}
   - component: {fileID: 1657238098}
   m_Layer: 5
-  m_Name: attackPannel
+  m_Name: attackPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

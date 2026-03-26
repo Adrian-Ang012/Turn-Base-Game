@@ -12,6 +12,7 @@ public class BattleHandler : MonoBehaviour
     public EnemyAI enemyAI;
     public BattleQueue battleQueue;
     public BattleRNG battleRNG;
+    public BattleUI battleUI;
 
     public enum BattlePhase { CommandSelection, Resolution, Victory, Defeat }
     public BattlePhase CurrentPhase { get; private set; }
@@ -44,6 +45,7 @@ public class BattleHandler : MonoBehaviour
                 u.ResetTurnFlags();
         }
 
+        Debug.Log("=== NEW ROUND ===");
         PromptNextPlayerCommand();
     }
 
@@ -57,6 +59,9 @@ public class BattleHandler : MonoBehaviour
 
         if (currentCommandIndex >= playerUnits.Count)
         {
+            if (battleUI != null)
+                battleUI.HideAllPanelsForResolution();
+
             BuildEnemyQueue();
             StartCoroutine(ResolvePhase());
             return;
@@ -64,12 +69,20 @@ public class BattleHandler : MonoBehaviour
 
         BattleUnit current = playerUnits[currentCommandIndex];
         Debug.Log("Choose an action for " + current.unitName + ".");
+
+        if (battleUI != null)
+            battleUI.ShowActionPanel(current);
     }
 
     public void ReceivePlayerAction(PlayerAction action)
     {
         if (action != null)
+        {
             battleQueue.AddPlayerAction(action);
+
+            string targetName = action.target != null ? action.target.unitName : "None";
+            Debug.Log("PLAYER QUEUED: " + action.actor.unitName + " -> " + action.actionType + " -> " + targetName);
+        }
 
         currentCommandIndex++;
         PromptNextPlayerCommand();
@@ -83,13 +96,19 @@ public class BattleHandler : MonoBehaviour
 
             PlayerAction action = enemyAI.DecideAction(enemy, GetAlivePlayers());
             battleQueue.AddEnemyAction(action);
+
+            if (action != null)
+            {
+                string targetName = action.target != null ? action.target.unitName : "None";
+                Debug.Log("ENEMY QUEUED: " + action.actor.unitName + " -> " + action.actionType + " -> " + targetName);
+            }
         }
     }
 
     IEnumerator ResolvePhase()
     {
         CurrentPhase = BattlePhase.Resolution;
-        Debug.Log("Actions resolve!");
+        Debug.Log("=== ACTIONS RESOLVE ===");
 
         yield return ExecuteQueue(battleQueue.GetPlayerQueue(), true);
 
@@ -121,6 +140,9 @@ public class BattleHandler : MonoBehaviour
                 finalTarget = actorIsPlayer ? GetRandomAliveEnemy() : GetRandomAlivePlayer();
             }
 
+            Debug.Log("EXECUTING: " + action.actor.unitName + " -> " + action.actionType +
+                      (finalTarget != null ? " -> " + finalTarget.unitName : ""));
+
             ExecuteAction(action.actor, action.actionType, finalTarget);
 
             if (CheckBattleEnd())
@@ -141,10 +163,14 @@ public class BattleHandler : MonoBehaviour
                     int damage = actor.CalculatePhysicalDamage();
                     damage = battleRNG.ApplyVariance(damage);
 
-                    if (battleRNG.RollCrit())
+                    bool isCrit = battleRNG.RollCrit();
+                    if (isCrit)
                         damage = battleRNG.ApplyCrit(damage);
 
                     target.TakeDamage(damage, false);
+
+                    Debug.Log(actor.unitName + " attacked " + target.unitName + " for " + damage + " damage" +
+                              (isCrit ? " (CRIT)" : ""));
                     break;
                 }
 
@@ -155,23 +181,30 @@ public class BattleHandler : MonoBehaviour
                     int damage = actor.CalculateMagicDamage();
                     damage = battleRNG.ApplyVariance(damage);
 
-                    if (battleRNG.RollCrit())
+                    bool isCrit = battleRNG.RollCrit();
+                    if (isCrit)
                         damage = battleRNG.ApplyCrit(damage);
 
                     target.TakeDamage(damage, true);
+
+                    Debug.Log(actor.unitName + " used Magic on " + target.unitName + " for " + damage + " damage" +
+                              (isCrit ? " (CRIT)" : ""));
                     break;
                 }
 
             case PlayerAction.ActionType.Defend:
                 actor.StartDefend();
+                Debug.Log(actor.unitName + " is defending.");
                 break;
 
             case PlayerAction.ActionType.UsePotion:
                 actor.UsePotion();
+                Debug.Log(actor.unitName + " used a potion.");
                 break;
 
             case PlayerAction.ActionType.Charge:
                 actor.StartCharge();
+                Debug.Log(actor.unitName + " is charging.");
                 break;
         }
 

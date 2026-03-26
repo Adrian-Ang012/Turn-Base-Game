@@ -24,12 +24,12 @@ public class BattleUI : MonoBehaviour
     public BattleHandler battleHandler;
     private BattleUnit currentUnit;
 
-    public Transform[] enemyTargets; // Drag Enemy_Robot and Enemy_Dragon here
-    private int currentTargetIndex = 0;
+    [Header("Enemy Targets")]
+    public Transform[] enemyTargets;
+    private int currentTargetIndex = -1;
 
     void Start()
     {
-        // Hook up buttons
         attackButton.onClick.AddListener(OnAttackClicked);
         defendButton.onClick.AddListener(OnDefendClicked);
         healButton.onClick.AddListener(OnHealClicked);
@@ -38,99 +38,215 @@ public class BattleUI : MonoBehaviour
         specialAttackButton.onClick.AddListener(OnSpecialAttack);
         returnButton.onClick.AddListener(OnReturn);
 
-        // Hide panels at start
         actionPanel.SetActive(true);
         attackPanel.SetActive(false);
-        indicator.SetActive(false);
+
+        if (indicator != null)
+        {
+            indicator.SetActive(false);
+
+            SpriteRenderer sr = indicator.GetComponent<SpriteRenderer>();
+            if (sr != null)
+                sr.sortingOrder = 999;
+        }
     }
 
-    // Called by BattleHandler when it’s time for a player unit to act
     public void ShowActionPanel(BattleUnit unit)
     {
         currentUnit = unit;
+        currentTargetIndex = -1;
+
         actionPanel.SetActive(true);
         attackPanel.SetActive(false);
-        actionText.text = $"Choose an action for {unit.unitName}";
-        indicator.SetActive(true);
+
+        actionText.text = "Choose an action for " + unit.unitName;
         MoveIndicatorTo(unit.transform);
+    }
+
+    public void HideAllPanelsForResolution()
+    {
+        actionPanel.SetActive(false);
+        attackPanel.SetActive(false);
+
+        if (indicator != null)
+            indicator.SetActive(false);
     }
 
     void OnAttackClicked()
     {
+        if (currentUnit == null) return;
+
         actionPanel.SetActive(false);
         attackPanel.SetActive(true);
-        actionText.text = "Choose your attack!";
-        currentTargetIndex = 0;
-        MoveIndicatorTo(enemyTargets[currentTargetIndex]);
+
+        currentTargetIndex = GetFirstAliveEnemyIndex();
+
+        if (currentTargetIndex == -1)
+        {
+            actionText.text = "No valid enemy targets.";
+            return;
+        }
+
+        SelectEnemyTarget(currentTargetIndex);
     }
 
     void OnDefendClicked()
     {
+        if (currentUnit == null) return;
+
         PlayerAction action = new PlayerAction(currentUnit, PlayerAction.ActionType.Defend, null);
         battleHandler.ReceivePlayerAction(action);
-        HidePanels();
-        actionText.text = $"{currentUnit.unitName} defends!";
+        actionText.text = currentUnit.unitName + " defends!";
     }
 
     void OnHealClicked()
     {
+        if (currentUnit == null) return;
+
         PlayerAction action = new PlayerAction(currentUnit, PlayerAction.ActionType.UsePotion, currentUnit);
         battleHandler.ReceivePlayerAction(action);
-        HidePanels();
-        actionText.text = $"{currentUnit.unitName} heals!";
+        actionText.text = currentUnit.unitName + " heals!";
     }
 
     void OnBasicAttack()
     {
+        if (currentUnit == null) return;
+        if (!IsValidTargetIndex(currentTargetIndex)) return;
+
         BattleUnit targetUnit = enemyTargets[currentTargetIndex].GetComponent<BattleUnit>();
+        if (targetUnit == null || targetUnit.isDead) return;
+
         PlayerAction action = new PlayerAction(currentUnit, PlayerAction.ActionType.Attack, targetUnit);
         battleHandler.ReceivePlayerAction(action);
-        HidePanels();
-        actionText.text = $"{currentUnit.unitName} attacks {targetUnit.unitName}!";
+        actionText.text = currentUnit.unitName + " attacks " + targetUnit.unitName + "!";
     }
 
     void OnSpecialAttack()
     {
+        if (currentUnit == null) return;
+        if (!IsValidTargetIndex(currentTargetIndex)) return;
+
         BattleUnit targetUnit = enemyTargets[currentTargetIndex].GetComponent<BattleUnit>();
+        if (targetUnit == null || targetUnit.isDead) return;
+
         PlayerAction action = new PlayerAction(currentUnit, PlayerAction.ActionType.Magic, targetUnit);
         battleHandler.ReceivePlayerAction(action);
-        HidePanels();
-        actionText.text = $"{currentUnit.unitName} casts magic on {targetUnit.unitName}!";
+        actionText.text = currentUnit.unitName + " casts magic on " + targetUnit.unitName + "!";
     }
 
     void OnReturn()
     {
         attackPanel.SetActive(false);
         actionPanel.SetActive(true);
-        MoveIndicatorTo(currentUnit.transform);
+
+        if (currentUnit != null)
+        {
+            currentTargetIndex = -1;
+            actionText.text = "Choose an action for " + currentUnit.unitName;
+            MoveIndicatorTo(currentUnit.transform);
+        }
+    }
+
+    public void SelectEnemyTarget(int index)
+    {
+        if (!IsValidTargetIndex(index)) return;
+
+        BattleUnit targetUnit = enemyTargets[index].GetComponent<BattleUnit>();
+        if (targetUnit == null || targetUnit.isDead) return;
+
+        currentTargetIndex = index;
+        MoveIndicatorTo(enemyTargets[currentTargetIndex]);
+        actionText.text = "Selected target: " + targetUnit.unitName + "  (Left/Right to switch)";
+        Debug.Log("Target selected: " + targetUnit.unitName);
     }
 
     void Update()
     {
-        if (attackPanel.activeSelf)
+        if (!attackPanel.activeSelf) return;
+
+        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
         {
-            if (Input.GetKeyDown(KeyCode.LeftArrow))
+            CycleTarget(-1);
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
+        {
+            CycleTarget(1);
+        }
+    }
+
+    void CycleTarget(int direction)
+    {
+        if (enemyTargets == null || enemyTargets.Length == 0) return;
+
+        int startIndex = currentTargetIndex;
+        if (startIndex < 0)
+            startIndex = GetFirstAliveEnemyIndex();
+
+        if (startIndex == -1) return;
+
+        int index = startIndex;
+
+        for (int i = 0; i < enemyTargets.Length; i++)
+        {
+            index = (index + direction + enemyTargets.Length) % enemyTargets.Length;
+
+            BattleUnit unit = enemyTargets[index].GetComponent<BattleUnit>();
+            if (unit != null && !unit.isDead)
             {
-                currentTargetIndex = 0;
-                MoveIndicatorTo(enemyTargets[0]);
-            }
-            else if (Input.GetKeyDown(KeyCode.RightArrow))
-            {
-                currentTargetIndex = 1;
-                MoveIndicatorTo(enemyTargets[1]);
+                SelectEnemyTarget(index);
+                return;
             }
         }
     }
 
     void MoveIndicatorTo(Transform target)
     {
-        indicator.transform.position = target.position + Vector3.up * 2f;
+        if (indicator == null || target == null) return;
+
+        SpriteRenderer targetSR = target.GetComponent<SpriteRenderer>();
+        SpriteRenderer indicatorSR = indicator.GetComponent<SpriteRenderer>();
+
+        if (indicatorSR != null)
+            indicatorSR.sortingOrder = 999;
+
+        if (targetSR != null)
+        {
+            float topY = targetSR.bounds.max.y;
+            indicator.transform.position = new Vector3(
+                targetSR.bounds.center.x,
+                topY + 0.25f,
+                target.position.z
+            );
+        }
+        else
+        {
+            indicator.transform.position = target.position + Vector3.up * 1.2f;
+        }
+
+        indicator.SetActive(true);
     }
 
-    void HidePanels()
+    bool IsValidTargetIndex(int index)
     {
-        actionPanel.SetActive(false);
-        attackPanel.SetActive(false);
-        indicator.SetActive(false);
+        return enemyTargets != null &&
+               index >= 0 &&
+               index < enemyTargets.Length &&
+               enemyTargets[index] != null;
+    }
+
+    int GetFirstAliveEnemyIndex()
+    {
+        if (enemyTargets == null) return -1;
+
+        for (int i = 0; i < enemyTargets.Length; i++)
+        {
+            if (enemyTargets[i] == null) continue;
+
+            BattleUnit unit = enemyTargets[i].GetComponent<BattleUnit>();
+            if (unit != null && !unit.isDead)
+                return i;
+        }
+
+        return -1;
     }
 }
