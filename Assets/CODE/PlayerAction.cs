@@ -11,7 +11,7 @@ public class PlayerAction
         Magic,
         Defend,
         UsePotion,
-        Charge         
+        Skip
     }
 
     public BattleUnit actor;        

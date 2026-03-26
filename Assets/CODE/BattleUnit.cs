@@ -20,14 +20,10 @@ public class BattleUnit : MonoBehaviour
     public int potionCount = 2;
     public int potionHealAmount = 40;
 
-    [Header("Charge / Unique Mechanic")]
-    public bool isCharging = false;
-    public float chargeMultiplier = 2f;
-
     [Header("UI References")]
-    public Slider hpSlider;          // Drag the Slider for this unit’s HP bar
-    public TMP_Text hpText;          // Drag the TMP text showing HP numbers
-    public TMP_Text unitNameText;    // Drag the TMP text showing the unit’s name
+    public Slider hpSlider;
+    public TMP_Text hpText;
+    public TMP_Text unitNameText;
 
     [HideInInspector] public bool isDefending = false;
     [HideInInspector] public bool isDead = false;
@@ -46,7 +42,8 @@ public class BattleUnit : MonoBehaviour
     {
         int def = isMagic ? magicDefense : defense;
 
-        if (isDefending) def = Mathf.RoundToInt(def * 2f);
+        if (isDefending)
+            def = Mathf.RoundToInt(def * 2f);
 
         int finalDamage = Mathf.Max(1, rawDamage - def);
         currentHP = Mathf.Max(0, currentHP - finalDamage);
@@ -62,28 +59,12 @@ public class BattleUnit : MonoBehaviour
 
     public int CalculatePhysicalDamage()
     {
-        int baseDmg = physicalAttack;
-
-        if (isCharging)
-        {
-            baseDmg = Mathf.RoundToInt(baseDmg * chargeMultiplier);
-            isCharging = false;
-        }
-
-        return baseDmg;
+        return physicalAttack;
     }
 
     public int CalculateMagicDamage()
     {
-        int baseDmg = magicAttack;
-
-        if (isCharging)
-        {
-            baseDmg = Mathf.RoundToInt(baseDmg * chargeMultiplier);
-            isCharging = false;
-        }
-
-        return baseDmg;
+        return magicAttack;
     }
 
     public bool UsePotion()
@@ -100,11 +81,6 @@ public class BattleUnit : MonoBehaviour
     public void StartDefend()
     {
         isDefending = true;
-    }
-
-    public void StartCharge()
-    {
-        isCharging = true;
     }
 
     public void ResetTurnFlags()
@@ -130,6 +106,5 @@ public class BattleUnit : MonoBehaviour
     void OnDeath()
     {
         Debug.Log($"{unitName} has been defeated!");
-        // Optional: disable GameObject, play death animation, etc.
     }
 }

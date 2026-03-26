@@ -4,11 +4,9 @@ using UnityEngine;
 
 public class BattleHandler : MonoBehaviour
 {
-    [Header("Party Members")]
     public List<BattleUnit> playerUnits;
     public List<BattleUnit> enemyUnits;
 
-    [Header("Dependencies")]
     public EnemyAI enemyAI;
     public BattleQueue battleQueue;
     public BattleRNG battleRNG;
@@ -34,18 +32,13 @@ public class BattleHandler : MonoBehaviour
         battleQueue.ClearQueues();
 
         foreach (var u in playerUnits)
-        {
             if (u != null && !u.isDead)
                 u.ResetTurnFlags();
-        }
 
         foreach (var u in enemyUnits)
-        {
             if (u != null && !u.isDead)
                 u.ResetTurnFlags();
-        }
 
-        Debug.Log("=== NEW ROUND ===");
         PromptNextPlayerCommand();
     }
 
@@ -59,30 +52,20 @@ public class BattleHandler : MonoBehaviour
 
         if (currentCommandIndex >= playerUnits.Count)
         {
-            if (battleUI != null)
-                battleUI.HideAllPanelsForResolution();
-
+            battleUI.HideAllPanelsForResolution();
             BuildEnemyQueue();
             StartCoroutine(ResolvePhase());
             return;
         }
 
         BattleUnit current = playerUnits[currentCommandIndex];
-        Debug.Log("Choose an action for " + current.unitName + ".");
-
-        if (battleUI != null)
-            battleUI.ShowActionPanel(current);
+        battleUI.ShowActionPanel(current);
     }
 
     public void ReceivePlayerAction(PlayerAction action)
     {
         if (action != null)
-        {
             battleQueue.AddPlayerAction(action);
-
-            string targetName = action.target != null ? action.target.unitName : "None";
-            Debug.Log("PLAYER QUEUED: " + action.actor.unitName + " -> " + action.actionType + " -> " + targetName);
-        }
 
         currentCommandIndex++;
         PromptNextPlayerCommand();
@@ -96,31 +79,18 @@ public class BattleHandler : MonoBehaviour
 
             PlayerAction action = enemyAI.DecideAction(enemy, GetAlivePlayers());
             battleQueue.AddEnemyAction(action);
-
-            if (action != null)
-            {
-                string targetName = action.target != null ? action.target.unitName : "None";
-                Debug.Log("ENEMY QUEUED: " + action.actor.unitName + " -> " + action.actionType + " -> " + targetName);
-            }
         }
     }
 
     IEnumerator ResolvePhase()
     {
-        CurrentPhase = BattlePhase.Resolution;
-        Debug.Log("=== ACTIONS RESOLVE ===");
-
         yield return ExecuteQueue(battleQueue.GetPlayerQueue(), true);
-
-        if (CheckBattleEnd())
-            yield break;
+        if (CheckBattleEnd()) yield break;
 
         yield return ExecuteQueue(battleQueue.GetEnemyQueue(), false);
+        if (CheckBattleEnd()) yield break;
 
-        if (CheckBattleEnd())
-            yield break;
-
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(1f);
         StartCommandPhase();
     }
 
@@ -131,129 +101,92 @@ public class BattleHandler : MonoBehaviour
             if (action == null || action.actor == null || action.actor.isDead)
                 continue;
 
-            BattleUnit finalTarget = action.target;
+            BattleUnit target = action.target;
 
             if ((action.actionType == PlayerAction.ActionType.Attack ||
                  action.actionType == PlayerAction.ActionType.Magic) &&
-                (finalTarget == null || finalTarget.isDead))
+                (target == null || target.isDead))
             {
-                finalTarget = actorIsPlayer ? GetRandomAliveEnemy() : GetRandomAlivePlayer();
+                target = actorIsPlayer ? GetRandomAliveEnemy() : GetRandomAlivePlayer();
             }
 
-            Debug.Log("EXECUTING: " + action.actor.unitName + " -> " + action.actionType +
-                      (finalTarget != null ? " -> " + finalTarget.unitName : ""));
-
-            ExecuteAction(action.actor, action.actionType, finalTarget);
+            ExecuteAction(action.actor, action.actionType, target);
 
             if (CheckBattleEnd())
                 yield break;
 
-            yield return new WaitForSeconds(0.6f);
+            yield return new WaitForSeconds(1f);
         }
     }
 
     void ExecuteAction(BattleUnit actor, PlayerAction.ActionType actionType, BattleUnit target)
     {
+        string msg = "";
+
         switch (actionType)
         {
             case PlayerAction.ActionType.Attack:
-                {
-                    if (target == null) return;
-
-                    int damage = actor.CalculatePhysicalDamage();
-                    damage = battleRNG.ApplyVariance(damage);
-
-                    bool isCrit = battleRNG.RollCrit();
-                    if (isCrit)
-                        damage = battleRNG.ApplyCrit(damage);
-
-                    target.TakeDamage(damage, false);
-
-                    Debug.Log(actor.unitName + " attacked " + target.unitName + " for " + damage + " damage" +
-                              (isCrit ? " (CRIT)" : ""));
-                    break;
-                }
+                int dmg = battleRNG.ApplyVariance(actor.CalculatePhysicalDamage());
+                if (battleRNG.RollCrit()) dmg = battleRNG.ApplyCrit(dmg);
+                target.TakeDamage(dmg, false);
+                msg = $"{actor.unitName} attacked {target.unitName} for {dmg} damage";
+                break;
 
             case PlayerAction.ActionType.Magic:
-                {
-                    if (target == null) return;
-
-                    int damage = actor.CalculateMagicDamage();
-                    damage = battleRNG.ApplyVariance(damage);
-
-                    bool isCrit = battleRNG.RollCrit();
-                    if (isCrit)
-                        damage = battleRNG.ApplyCrit(damage);
-
-                    target.TakeDamage(damage, true);
-
-                    Debug.Log(actor.unitName + " used Magic on " + target.unitName + " for " + damage + " damage" +
-                              (isCrit ? " (CRIT)" : ""));
-                    break;
-                }
+                int mdmg = battleRNG.ApplyVariance(actor.CalculateMagicDamage());
+                if (battleRNG.RollCrit()) mdmg = battleRNG.ApplyCrit(mdmg);
+                target.TakeDamage(mdmg, true);
+                msg = $"{actor.unitName} used Magic on {target.unitName} for {mdmg} damage";
+                break;
 
             case PlayerAction.ActionType.Defend:
                 actor.StartDefend();
-                Debug.Log(actor.unitName + " is defending.");
+                msg = $"{actor.unitName} is defending";
                 break;
 
             case PlayerAction.ActionType.UsePotion:
                 actor.UsePotion();
-                Debug.Log(actor.unitName + " used a potion.");
+                msg = $"{actor.unitName} used a potion";
                 break;
 
-            case PlayerAction.ActionType.Charge:
-                actor.StartCharge();
-                Debug.Log(actor.unitName + " is charging.");
+            case PlayerAction.ActionType.Skip:
+                msg = $"{actor.unitName} skipped the turn";
                 break;
         }
 
+        battleUI.ShowBattleMessage(msg);
+
         actor.RefreshUI();
-        if (target != null)
-            target.RefreshUI();
+        if (target != null) target.RefreshUI();
     }
 
     BattleUnit GetRandomAliveEnemy()
     {
-        List<BattleUnit> alive = GetAliveEnemies();
-        if (alive.Count == 0) return null;
-        return alive[Random.Range(0, alive.Count)];
+        var alive = GetAliveEnemies();
+        return alive.Count == 0 ? null : alive[Random.Range(0, alive.Count)];
     }
 
     BattleUnit GetRandomAlivePlayer()
     {
-        List<BattleUnit> alive = GetAlivePlayers();
-        if (alive.Count == 0) return null;
-        return alive[Random.Range(0, alive.Count)];
+        var alive = GetAlivePlayers();
+        return alive.Count == 0 ? null : alive[Random.Range(0, alive.Count)];
     }
 
     public bool CheckBattleEnd()
     {
-        bool allPlayersDead = playerUnits.TrueForAll(p => p.isDead);
-        bool allEnemiesDead = enemyUnits.TrueForAll(e => e.isDead);
-
-        if (allPlayersDead)
+        if (playerUnits.TrueForAll(p => p.isDead))
         {
-            CurrentPhase = BattlePhase.Defeat;
-            Debug.Log("DEFEAT! Your party has been wiped out...");
+            battleUI.ShowBattleMessage("Defeat!");
             return true;
         }
 
-        if (allEnemiesDead)
+        if (enemyUnits.TrueForAll(e => e.isDead))
         {
-            CurrentPhase = BattlePhase.Victory;
-            Debug.Log("VICTORY! All enemies defeated!");
+            battleUI.ShowBattleMessage("Victory!");
             return true;
         }
 
         return false;
-    }
-
-    public BattleUnit GetCurrentCommandUnit()
-    {
-        if (currentCommandIndex < playerUnits.Count)
-            return playerUnits[currentCommandIndex];
-        return null;
     }
 
     public List<BattleUnit> GetAliveEnemies() => enemyUnits.FindAll(e => !e.isDead);

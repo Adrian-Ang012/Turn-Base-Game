@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.InputSystem;
 
 public class BattleUI : MonoBehaviour
 {
@@ -8,6 +9,7 @@ public class BattleUI : MonoBehaviour
     public Button attackButton;
     public Button defendButton;
     public Button healButton;
+    public Button skipButton;
 
     [Header("Attack Panel Buttons")]
     public Button basicAttackButton;
@@ -30,10 +32,15 @@ public class BattleUI : MonoBehaviour
 
     void Start()
     {
+        // Main buttons
         attackButton.onClick.AddListener(OnAttackClicked);
         defendButton.onClick.AddListener(OnDefendClicked);
         healButton.onClick.AddListener(OnHealClicked);
 
+        if (skipButton != null)
+            skipButton.onClick.AddListener(OnSkipClicked);
+
+        // Attack panel
         basicAttackButton.onClick.AddListener(OnBasicAttack);
         specialAttackButton.onClick.AddListener(OnSpecialAttack);
         returnButton.onClick.AddListener(OnReturn);
@@ -51,6 +58,10 @@ public class BattleUI : MonoBehaviour
         }
     }
 
+    // =========================
+    // COMMAND PHASE
+    // =========================
+
     public void ShowActionPanel(BattleUnit unit)
     {
         currentUnit = unit;
@@ -59,24 +70,38 @@ public class BattleUI : MonoBehaviour
         actionPanel.SetActive(true);
         attackPanel.SetActive(false);
 
+        SetMainButtonsVisible(true);
+
         actionText.text = "Choose an action for " + unit.unitName;
         MoveIndicatorTo(unit.transform);
     }
 
     public void HideAllPanelsForResolution()
     {
-        actionPanel.SetActive(false);
+        actionPanel.SetActive(true); // keep text visible
+
+        SetMainButtonsVisible(false);
         attackPanel.SetActive(false);
 
         if (indicator != null)
             indicator.SetActive(false);
     }
 
+    public void ShowBattleMessage(string message)
+    {
+        if (actionText != null)
+            actionText.text = message;
+    }
+
+    // =========================
+    // BUTTON ACTIONS
+    // =========================
+
     void OnAttackClicked()
     {
         if (currentUnit == null) return;
 
-        actionPanel.SetActive(false);
+        SetMainButtonsVisible(false);
         attackPanel.SetActive(true);
 
         currentTargetIndex = GetFirstAliveEnemyIndex();
@@ -94,9 +119,8 @@ public class BattleUI : MonoBehaviour
     {
         if (currentUnit == null) return;
 
-        PlayerAction action = new PlayerAction(currentUnit, PlayerAction.ActionType.Defend, null);
+        PlayerAction action = new PlayerAction(currentUnit, PlayerAction.ActionType.Defend);
         battleHandler.ReceivePlayerAction(action);
-        actionText.text = currentUnit.unitName + " defends!";
     }
 
     void OnHealClicked()
@@ -105,7 +129,14 @@ public class BattleUI : MonoBehaviour
 
         PlayerAction action = new PlayerAction(currentUnit, PlayerAction.ActionType.UsePotion, currentUnit);
         battleHandler.ReceivePlayerAction(action);
-        actionText.text = currentUnit.unitName + " heals!";
+    }
+
+    void OnSkipClicked()
+    {
+        if (currentUnit == null) return;
+
+        PlayerAction action = new PlayerAction(currentUnit, PlayerAction.ActionType.Skip);
+        battleHandler.ReceivePlayerAction(action);
     }
 
     void OnBasicAttack()
@@ -118,7 +149,6 @@ public class BattleUI : MonoBehaviour
 
         PlayerAction action = new PlayerAction(currentUnit, PlayerAction.ActionType.Attack, targetUnit);
         battleHandler.ReceivePlayerAction(action);
-        actionText.text = currentUnit.unitName + " attacks " + targetUnit.unitName + "!";
     }
 
     void OnSpecialAttack()
@@ -131,13 +161,12 @@ public class BattleUI : MonoBehaviour
 
         PlayerAction action = new PlayerAction(currentUnit, PlayerAction.ActionType.Magic, targetUnit);
         battleHandler.ReceivePlayerAction(action);
-        actionText.text = currentUnit.unitName + " casts magic on " + targetUnit.unitName + "!";
     }
 
     void OnReturn()
     {
         attackPanel.SetActive(false);
-        actionPanel.SetActive(true);
+        SetMainButtonsVisible(true);
 
         if (currentUnit != null)
         {
@@ -147,6 +176,10 @@ public class BattleUI : MonoBehaviour
         }
     }
 
+    // =========================
+    // TARGET SELECTION
+    // =========================
+
     public void SelectEnemyTarget(int index)
     {
         if (!IsValidTargetIndex(index)) return;
@@ -155,36 +188,28 @@ public class BattleUI : MonoBehaviour
         if (targetUnit == null || targetUnit.isDead) return;
 
         currentTargetIndex = index;
-        MoveIndicatorTo(enemyTargets[currentTargetIndex]);
-        actionText.text = "Selected target: " + targetUnit.unitName + "  (Left/Right to switch)";
-        Debug.Log("Target selected: " + targetUnit.unitName);
+        MoveIndicatorTo(enemyTargets[index]);
+
+        actionText.text = "Selected target: " + targetUnit.unitName;
     }
 
     void Update()
     {
         if (!attackPanel.activeSelf) return;
+        if (Keyboard.current == null) return;
 
-        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
-        {
+        if (Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame)
             CycleTarget(-1);
-        }
-        else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
-        {
+
+        if (Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame)
             CycleTarget(1);
-        }
     }
 
     void CycleTarget(int direction)
     {
         if (enemyTargets == null || enemyTargets.Length == 0) return;
 
-        int startIndex = currentTargetIndex;
-        if (startIndex < 0)
-            startIndex = GetFirstAliveEnemyIndex();
-
-        if (startIndex == -1) return;
-
-        int index = startIndex;
+        int index = currentTargetIndex < 0 ? GetFirstAliveEnemyIndex() : currentTargetIndex;
 
         for (int i = 0; i < enemyTargets.Length; i++)
         {
@@ -199,22 +224,25 @@ public class BattleUI : MonoBehaviour
         }
     }
 
+    // =========================
+    // INDICATOR
+    // =========================
+
     void MoveIndicatorTo(Transform target)
     {
         if (indicator == null || target == null) return;
 
-        SpriteRenderer targetSR = target.GetComponent<SpriteRenderer>();
-        SpriteRenderer indicatorSR = indicator.GetComponent<SpriteRenderer>();
+        SpriteRenderer sr = target.GetComponent<SpriteRenderer>();
+        if (sr == null)
+            sr = target.GetComponentInChildren<SpriteRenderer>();
 
-        if (indicatorSR != null)
-            indicatorSR.sortingOrder = 999;
-
-        if (targetSR != null)
+        if (sr != null)
         {
-            float topY = targetSR.bounds.max.y;
+            float y = sr.bounds.max.y + 0.2f;
+
             indicator.transform.position = new Vector3(
-                targetSR.bounds.center.x,
-                topY + 0.25f,
+                sr.bounds.center.x,
+                y,
                 target.position.z
             );
         }
@@ -224,6 +252,19 @@ public class BattleUI : MonoBehaviour
         }
 
         indicator.SetActive(true);
+    }
+
+    // =========================
+    // HELPERS
+    // =========================
+
+    void SetMainButtonsVisible(bool visible)
+    {
+        attackButton.gameObject.SetActive(visible);
+        defendButton.gameObject.SetActive(visible);
+        healButton.gameObject.SetActive(visible);
+        if (skipButton != null)
+            skipButton.gameObject.SetActive(visible);
     }
 
     bool IsValidTargetIndex(int index)
@@ -236,8 +277,6 @@ public class BattleUI : MonoBehaviour
 
     int GetFirstAliveEnemyIndex()
     {
-        if (enemyTargets == null) return -1;
-
         for (int i = 0; i < enemyTargets.Length; i++)
         {
             if (enemyTargets[i] == null) continue;
