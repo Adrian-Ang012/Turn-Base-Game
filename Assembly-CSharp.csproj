@@ -49,7 +49,6 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.5f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Ilumisoft\Health System\Scripts\Health.cs" />
     <Compile Include="Assets\WaypointSystem\Scripts\Demo_Scripts\WaypointPlatformerController.cs" />
     <Compile Include="Assets\CODE\BattleHandler.cs" />
     <Compile Include="Assets\WaypointSystem\Scripts\WaypointSettings.cs" />
@@ -58,6 +57,7 @@
     <Compile Include="Assets\Ilumisoft\Health System\Demo\Scripts\DemoDummy.cs" />
     <Compile Include="Assets\WaypointSystem\Scripts\WaypointTarget.cs" />
     <Compile Include="Assets\Ilumisoft\Health System\Scripts\Base\HitboxComponent.cs" />
+    <Compile Include="Assets\CODE\BattleUI.cs" />
     <Compile Include="Assets\Ilumisoft\Health System\Scripts\Hitbox.cs" />
     <Compile Include="Assets\WaypointSystem\Scripts\WaypointMarkerUI.cs" />
     <Compile Include="Assets\CODE\BattleUnit.cs" />
@@ -73,6 +73,33 @@
     <Compile Include="Assets\Ilumisoft\Health System\Scripts\UI\Healthbar.cs" />
     <Compile Include="Assets\CODE\BattleRNG.cs" />
     <Compile Include="Assets\CODE\BattleQueue.cs" />
+    <Compile Include="Assets\Ilumisoft\Health System\Scripts\Health.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile-2-Pass.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\SDFFunctions.hlsl" />
+    <None Include="Assets\Pixel Art\PixelArtRPGVFXLite\ReadMe.txt" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
+    <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD.shader" />
+    <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
+    <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
+    <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_Sprite.shader" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

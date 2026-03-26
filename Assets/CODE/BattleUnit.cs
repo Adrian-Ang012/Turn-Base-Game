@@ -25,9 +25,9 @@ public class BattleUnit : MonoBehaviour
     public float chargeMultiplier = 2f;
 
     [Header("UI References")]
-    public Slider hpSlider;
-    public TMP_Text hpText;
-    public TMP_Text unitNameText;
+    public Slider hpSlider;          // Drag the Slider for this unit’s HP bar
+    public TMP_Text hpText;          // Drag the TMP text showing HP numbers
+    public TMP_Text unitNameText;    // Drag the TMP text showing the unit’s name
 
     [HideInInspector] public bool isDefending = false;
     [HideInInspector] public bool isDead = false;
@@ -130,5 +130,6 @@ public class BattleUnit : MonoBehaviour
     void OnDeath()
     {
         Debug.Log($"{unitName} has been defeated!");
+        // Optional: disable GameObject, play death animation, etc.
     }
 }
