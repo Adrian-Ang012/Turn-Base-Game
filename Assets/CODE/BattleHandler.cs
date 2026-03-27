@@ -11,6 +11,8 @@ public class BattleHandler : MonoBehaviour
     public BattleQueue battleQueue;
     public BattleRNG battleRNG;
     public BattleUI battleUI;
+    public GameObject winPanel;
+    public GameObject losePanel;
 
     public enum BattlePhase { CommandSelection, Resolution, Victory, Defeat }
     public BattlePhase CurrentPhase { get; private set; }
@@ -176,13 +178,13 @@ public class BattleHandler : MonoBehaviour
     {
         if (playerUnits.TrueForAll(p => p.isDead))
         {
-            battleUI.ShowBattleMessage("Defeat!");
+            losePanel.SetActive(true);
             return true;
         }
 
         if (enemyUnits.TrueForAll(e => e.isDead))
         {
-            battleUI.ShowBattleMessage("Victory!");
+            winPanel.SetActive(true);
             return true;
         }
 

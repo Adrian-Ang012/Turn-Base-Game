@@ -25,6 +25,9 @@ public class BattleUnit : MonoBehaviour
     public TMP_Text hpText;
     public TMP_Text unitNameText;
 
+    [Header("VFX")]
+    public GameObject deathVFX;
+
     [HideInInspector] public bool isDefending = false;
     [HideInInspector] public bool isDead = false;
 
@@ -106,5 +109,31 @@ public class BattleUnit : MonoBehaviour
     void OnDeath()
     {
         Debug.Log($"{unitName} has been defeated!");
-    }
+
+        if (deathVFX != null)
+        {
+            Canvas canvas = FindObjectOfType<Canvas>();
+            if (canvas != null)
+            {
+                GameObject vfx = Instantiate(deathVFX, canvas.transform);
+
+                Animator anim = vfx.GetComponent<Animator>();
+                if (anim != null)
+                {
+                    anim.SetTrigger("OnDeath");
+                }
+                else
+                {
+                    Debug.LogWarning("Death VFX prefab has no Animator!");
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Death VFX prefab not assigned!");
+        }
+
+        hpSlider.gameObject.SetActive(false);
+        gameObject.SetActive(false);
+    } 
 }

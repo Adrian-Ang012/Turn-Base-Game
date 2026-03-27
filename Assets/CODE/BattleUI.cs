@@ -50,7 +50,7 @@ public class BattleUI : MonoBehaviour
 
         if (indicator != null)
         {
-            indicator.SetActive(false);
+            indicator.SetActive(true);
 
             SpriteRenderer sr = indicator.GetComponent<SpriteRenderer>();
             if (sr != null)
@@ -228,29 +228,30 @@ public class BattleUI : MonoBehaviour
     // INDICATOR
     // =========================
 
-    void MoveIndicatorTo(Transform target)
+            void MoveIndicatorTo(Transform target)
     {
         if (indicator == null || target == null) return;
 
-        SpriteRenderer sr = target.GetComponent<SpriteRenderer>();
-        if (sr == null)
-            sr = target.GetComponentInChildren<SpriteRenderer>();
+        // Look for a child transform with a specific indicator anchor name
+        Transform anchor = target.Find("mageindicator");
+        if (anchor == null) anchor = target.Find("knightindicator");
+        if (anchor == null) anchor = target.Find("robotindicator");
+        if (anchor == null) anchor = target.Find("dragonindicator");
 
-        if (sr != null)
+        Vector3 newPos;
+
+        if (anchor != null)
         {
-            float y = sr.bounds.max.y + 0.2f;
-
-            indicator.transform.position = new Vector3(
-                sr.bounds.center.x,
-                y,
-                target.position.z
-            );
+            // Place indicator exactly at the anchor point
+            newPos = anchor.position;
         }
         else
         {
-            indicator.transform.position = target.position + Vector3.up * 1.2f;
+            // Fallback: place above the unit’s transform
+            newPos = target.position + Vector3.up * 1.5f;
         }
 
+        indicator.transform.position = newPos;
         indicator.SetActive(true);
     }
 
