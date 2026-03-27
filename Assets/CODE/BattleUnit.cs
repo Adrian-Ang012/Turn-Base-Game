@@ -110,30 +110,32 @@ public class BattleUnit : MonoBehaviour
     {
         Debug.Log($"{unitName} has been defeated!");
 
-        if (deathVFX != null)
+        if (deathVFX != null && hpSlider != null)
         {
-            Canvas canvas = FindObjectOfType<Canvas>();
-            if (canvas != null)
+            // Spawn the VFX as a child of the HP slider’s parent (the unit’s UI panel)
+            GameObject vfx = Instantiate(deathVFX, hpSlider.transform.parent);
+
+            // Position it just below the HP slider
+            RectTransform vfxRect = vfx.GetComponent<RectTransform>();
+            if (vfxRect != null)
             {
-                GameObject vfx = Instantiate(deathVFX, canvas.transform);
+                // Anchor to the same spot as the HP slider
+                vfxRect.anchorMin = hpSlider.GetComponent<RectTransform>().anchorMin;
+                vfxRect.anchorMax = hpSlider.GetComponent<RectTransform>().anchorMax;
 
-                Animator anim = vfx.GetComponent<Animator>();
-                if (anim != null)
-                {
-                    anim.SetTrigger("OnDeath");
-                }
-                else
-                {
-                    Debug.LogWarning("Death VFX prefab has no Animator!");
-                }
+                vfxRect.anchoredPosition = hpSlider.GetComponent<RectTransform>().anchoredPosition 
+                                        + new Vector2(0, 50f);
+
+                vfxRect.sizeDelta = new Vector2(200f, 200f);
             }
-        }
-        else
-        {
-            Debug.LogWarning("Death VFX prefab not assigned!");
+
+            // Clean up after a few seconds
+            Destroy(vfx, 3f);
         }
 
+        // Keep these lines exactly as you requested
         hpSlider.gameObject.SetActive(false);
-        gameObject.SetActive(false);
-    } 
+        gameObject.SetActive(false); // hide or disable the unit
+    }   
+
 }
